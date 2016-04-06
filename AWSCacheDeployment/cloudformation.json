@@ -1,0 +1,86 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "",
+  "Parameters" : {
+  },
+  "Resources" : {
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Default Cache Ports",
+        "SecurityGroupIngress" : [ 
+        { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"},
+        { "IpProtocol" : "tcp", "FromPort" : "1972", "ToPort" : "1972", "CidrIp" : "0.0.0.0/0"},
+        { "IpProtocol" : "tcp", "FromPort" : "57772", "ToPort" : "57772", "CidrIp" : "0.0.0.0/0"}
+         ]
+         }
+         },
+      "MASTER" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "Tags":[{"Key":"Name", "Value":"MASTER"}],
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "KeyName" : "mykey",
+        "BlockDeviceMappings": [
+                 {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "200",
+                            "VolumeType": "io1",
+                            "Iops": "2000"
+                            }
+                        }
+                    
+                ],
+        "ImageId" : "ami-a25415cb",
+        "InstanceType": "m1.large",
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -ex", "\n",
+          "wget https://mywebsite.com/bootstrap.sh","\n",
+          "sh bootstrap.sh","\n"
+         ] ] } }
+      }
+      },
+      "SIDEKICK1" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "Tags":[{"Key":"Name", "Value":"SIDEKICK1"}],
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "KeyName" : "mykey",
+        "ImageId" : "ami-a25415cb",
+        "InstanceType": "m1.large",
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -ex", "\n",
+          "wget https://mywebsite.com/bootstrap.sh","\n",
+          "sh bootstrap.sh","\n"
+         ] ] } }
+      }
+      },
+      "SIDEKICK2" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "Tags":[{"Key":"Name", "Value":"SIDEKICK2"}],
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "KeyName" : "mykey",
+        "ImageId" : "ami-a25415cb",
+        "InstanceType": "m1.large",
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -ex", "\n",
+          "wget https://mywebsite.com/bootstrap.sh","\n",
+          "sh bootstrap.sh","\n"
+         ] ] } }
+
+      }
+      }
+  },
+  "Outputs" : {
+          "MASTERURL": {
+            "Description": "Access MASTER Management Portal at the following URL.",
+            "Value": { "Fn::Join": [ "",
+                [ "http://", { "Fn::GetAtt": [ "MASTER", "PublicDnsName" ] }, ":57772/csp/sys/UtilHome.csp" ]
+            ] }
+        }
+
+  }
+
+}

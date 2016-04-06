@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<com.intersys.eclipse.sync.library:AtelierProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.intersys.eclipse.sync.library="http:///com/intersys/eclipse/sync/library/model/sync.ecore" name="AWSCacheDeployment">
+  <resourceList name="DefaultInstaller.cls" localFilePath="file:/C:/Users/Sergey/InterSystems/Atelier/workspace/AWSCacheDeployment/SN/DefaultInstaller.cls">
+    <version serverTimestamp="2016-04-06 18:29:06.917" lastUpdateTimestamp="1459956546923" serverDocName="SN.DefaultInstaller.cls"/>
+  </resourceList>
+  <resourceList name="DefaultInstaller.cls" localFilePath="file:/C:/Users/Sergey/InterSystems/git/AWSCacheDeployment/SN/DefaultInstaller.cls">
+    <version serverTimestamp="2016-04-06 18:29:06.917" lastUpdateTimestamp="1459958177942"/>
+  </resourceList>
+</com.intersys.eclipse.sync.library:AtelierProject>
