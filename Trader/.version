@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ASCII"?>
+<com.intersys.eclipse.sync.library:AtelierProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.intersys.eclipse.sync.library="http:///com/intersys/eclipse/sync/library/model/sync.ecore" name="Trader">
+  <resourceList name="RestHandler.cls" localFilePath="file:/Users/evshvarov/Dropbox/InterSystems/Atelier/Trader/App/RestHandler.cls">
+    <version serverTimestamp="2016-04-09 13:16:37.602" lastUpdateTimestamp="1460200597614" serverDocName="App.RestHandler.cls"/>
+  </resourceList>
+  <resourceList name="Portfolio.cls" localFilePath="file:/Users/evshvarov/Dropbox/InterSystems/Atelier/Trader/Data/Portfolio.cls">
+    <version serverTimestamp="2016-04-09 13:16:37.782" lastUpdateTimestamp="1460200597788" serverDocName="Data.Portfolio.cls"/>
+  </resourceList>
+  <resourceList name="Customer.cls" localFilePath="file:/Users/evshvarov/Dropbox/InterSystems/Atelier/Trader/Data/Customer.cls">
+    <version serverTimestamp="2016-04-09 13:16:37.928" lastUpdateTimestamp="1460200597931" serverDocName="Data.Customer.cls"/>
+  </resourceList>
+  <resourceList name="Rules.cls" localFilePath="file:/Users/evshvarov/Dropbox/InterSystems/Atelier/Trader/App/Rules.cls">
+    <version serverTimestamp="2016-04-09 13:16:38.022" lastUpdateTimestamp="1460200598028" serverDocName="App.Rules.cls"/>
+  </resourceList>
+</com.intersys.eclipse.sync.library:AtelierProject>
