@@ -1,0 +1,269 @@
+ROUTINE ZAUTHENTICATE
+ZAUTHENTICATE(ServiceName,Namespace,Username,Password,Credentials,Properties) PUBLIC {
+ /*
+ Parameters:
+  ServiceName - Name of the service the user is connecting to. This 
+                could be %Service_Console, %Service_Bindings, etc.
+  Namespace - Namespace specified as part of the connection string when connecting
+              via the Bindings service, or through a CSP application. If neither of these, then
+              passed in as "".
+  Username - Username entered by the user to be validated by the 
+             user written code.
+  Password - Password entered by the user to be validated by the
+             user written code
+  Credentials - Not currently used, reserved for future use.
+  Properties - Array of returned values, passed by reference
+ 
+ 
+ Return values:
+  Success - $SYSTEM.Status.OK() - Username/Password combination authenticated ok
+  Failure - $SYSTEM.Status.Error($$$ERRORCODE,Param1,...) - Username/Password combination 
+            did not authenticate ok
+ 
+ Here are a list of predefined error code which can be returned, or you
+ can generate your own errors. If you wish to use these error codes
+ in your routine, you must uncomment out the %occErrors include statement below.
+ 
+ $SYSTEM.Status.Error($$$AccessDenied)                           Access Denied
+ $SYSTEM.Status.Error($$$InvalidUsernameOrPassword)              Invalid Username or Password
+ $SYSTEM.Status.Error($$$UserNotAuthorizedOnSystem,Username)     User x is not authorized
+ $SYSTEM.Status.Error($$$UserAccountIsDisabled,Username)         User x account is disabled
+ $SYSTEM.Status.Error($$$UserInvalidUsernameOrPassword,Username) User x invalid name or password
+ $SYSTEM.Status.Error($$$UserLoginTimeout)                       Login timeout
+ $SYSTEM.Status.Error($$$UserCTRLC)                              Login aborted
+ $SYSTEM.Status.Error($$$UserDoesNotExist,Username)              User x does not exist
+ $SYSTEM.Status.Error($$$UserInvalid,Username)                   Username x is invalid
+ $SYSTEM.Status.Error($$$PasswordChangeRequired)                 Password change required
+ $SYSTEM.Status.Error($$$UserAccountIsExpired,Username)          User x account has expired
+ $SYSTEM.Status.Error($$$UserAccountIsInactive,Username)         User x account is inactive
+ $SYSTEM.Status.Error($$$UserInvalidPassword)                    Invalid password
+ $SYSTEM.Status.Error($$$ServiceDisabled,ServiceName)            Logins for Service x are disabled
+ $SYSTEM.Status.Error($$$ServiceLoginsDisabled)                  Logins are disabled
+ $SYSTEM.Status.Error($$$ServiceNotAuthorized,ServiceName)       User not authorized for service
+ $SYSTEM.Status.Error($$$UserPasswordInvalidFormat)              Password does not match length or pattern requirements
+ If you wish to generate your own custom message, you can use the following:
+ 
+ $SYSTEM.Status.Error($$$GeneralError,"Any text here")
+ 
+ The Roles, NameSpace, and Routine variables are also used to set the value of
+ $ROLES for the process in addition to the startup namespace and routine 
+ for terminal access.
+ 
+ Properties() - Array of user properties passed by reference (see notes below):
+   Properties("Comment") - Comment
+   Properties("FullName") - Full name of the user
+   Properties("NameSpace") - Default NameSpace for terminal login, e.g. "USER"
+                             NameSpace = "" means use "USER" or "%SYS" 
+                            (note the capital "S" in NameSpace)
+   Properties("Roles")- Comma-separated list of roles, e.g. "%Developer,%Operator"
+   Properties("Routine") - Routine the user runs for terminal access. 
+                           Routine="" means programmer mode
+   Properties("Password") - Password
+   Properties("Username") - Username
+   Properties("EmailAddress") - Email address
+   Properties("PhoneNumber") - Mobile phone number of user for Two Factor Authentication
+   Properties("PhoneProvider") - Phone provider for user's mobile phone
+   Properties("AutheEnabled") - Enable Two Factor Authentication for this login
+ 
+ */
+ 
+#include %occErrors
+
+ // LDAP INCLUDE file
+#include %syLDAP
+ //Uncomment out the following line if you wish to use the $$$AutheTwoFactor macros
+#include %sySecurity
+
+ // define references to use in OpenLDAP interface
+#define BaseDN "dc=intersystems,dc=com"
+#define FilterProperty "uid"
+
+#define CreateStatusException(%LDsts,%msg) ##class(%Exception.StatusException).CreateFromStatus($SYSTEM.Status.Error(5001,##Class(%SYS.LDAP).Err2String(%LDsts)_%msg))
+ 
+#dim ReturnStatus as %Status
+#dim Except as %Exception.SystemException
+ 
+ set ReturnStatus = $SYSTEM.Status.OK()
+ 
+ try {
+ /* Get basic LDAP environment parameters */
+
+ 	set LDAPServer = $get(^LDAPenv("server"))
+ 	set AdminDN = $get(^LDAPenv("AdminDN"))
+ 	set AdminPassword = $get(^LDAPenv("AdminPwd"))
+ 	
+ /* AUTHENTICATION SECTION */
+   
+   // split the $list in Username into Username and AppModule
+   set AppModule = $listget(Username,2)
+   set Username = $listget(Username,1)
+   
+   set LDAPsvr=##Class(%SYS.LDAP).Init(LDAPServer)
+   
+   // Init method will return 0 if it fails
+   if LDAPsvr = 0 {
+      throw $$$CreateStatusException(##Class(%SYS.LDAP).GetLastError(),"")
+   }
+   
+   // now bind (log into) the LDAP server
+   set LDStatus=##Class(%SYS.LDAP).SimpleBinds(LDAPsvr,AdminDN,AdminPassword)
+   throw:LDStatus'=$$$LDAPSUCCESS $$$CreateStatusException(LDStatus,"")
+   
+   // Now that we have read access to the LDAP server, we need to search the LDAP
+   // database for the user we want to authenticate in order to get their DN.
+   // Once we have their DN, we can then use LDAP_Simple_Bind (authenticate) them using
+   // their password.
+   set Filter=$$$FilterProperty_"="_Username
+   // set the scope of the LDAP search
+   // $$$LDAPSCOPESUBTREE means to search the entire tree beneath the BaseDN used.
+   set SearchScope=$$$LDAPSCOPESUBTREE
+   // Max length of time the search can last.
+   set Timeout=10
+   // Return just the first thing we find.
+   set SizeLimit=1
+
+   // perform the search
+   set LDStatus=##Class(%SYS.LDAP).SearchExts(LDAPsvr,$$$BaseDN,SearchScope,Filter,"",0,"","",Timeout,SizeLimit,.SearchResult)
+   if LDStatus'=$$$LDAPSUCCESS {
+      // If we got a funny username entered by the user, we may have a bad filter.
+      if LDStatus=$$$XLDAPFILTERERROR set LDStatus = 1
+      throw $$$CreateStatusException(LDStatus,"")
+   }
+   #;See how many entries were returned by the search.
+   set NumEntries=##Class(%SYS.LDAP).CountEntries(LDAPsvr,SearchResult)
+   Throw:NumEntries=-1 $$$CreateStatusException(##Class(%SYS.LDAP).GetError(LDAsvr),"")
+   
+   // If NumEntries=0, then either there is no LDAP user for the username 
+   // in the database, or the BaseDN parameter needs to be set higher in the tree.
+   throw:NumEntries=0 $$$CreateStatusException(1,",User "_Username_" does not exist")
+
+   // If the search returned too many items, then the Filter is probably wrong. 
+   throw:NumEntries>1 $$$CreateStatusException(1,"LDAP Filter is not unique")
+
+   // Now get the pointer to the first (and only) entry in the returned search list.
+   set CurrentEntry = ##Class(%SYS.LDAP).FirstEntry(LDAPsvr,SearchResult)
+   if CurrentEntry=0 {
+     set LDStatus=##Class(%SYS.LDAP).GetError(LDAPsvr)
+     throw $$$CreateStatusException(LDStatus,"") 
+   }
+
+   // Retrieve all the user's attributes for later use in authorization. 
+   set Attribute = ##Class(%SYS.LDAP).FirstAttribute(LDAPsvr,CurrentEntry,.Ptr)
+   while (Attribute'="") {
+      set Values = ##Class(%SYS.LDAP).GetValues(LDAPsvr,CurrentEntry,Attribute)
+      set ReturnAttributes(Attribute) = Values
+      set Attribute = ##Class(%SYS.LDAP).NextAttribute(LDAPsvr,CurrentEntry,.Ptr)
+    }
+ 
+   // Retrieve the DN (distiguished Name) for the user we found so we can 
+   // bind (authenticate) on it.
+   set UserDN = ##Class(%SYS.LDAP).GetDN(LDAPsvr,CurrentEntry)
+
+   // Now authenticate the user based on their DN
+   //   Example of a userDN: uid=rich,dc=intersystem,dc=com
+   set LDStatus=##Class(%SYS.LDAP).SimpleBinds(LDAPsvr,UserDN,Password)
+   throw:LDStatus'=$$$LDAPSUCCESS $$$CreateStatusException(LDStatus,"")
+   
+ /* AUTHORIZATION SECTION */
+ 
+ /* Code for Example 1
+    // ***** basic setup of user properties *****
+   set Properties("FullName") = ReturnAttributes("cn") // Full name of the user
+   set Properties("NameSpace") = "USER" // Default NameSpace for terminal login, e.g. "USER"
+   set Properties("Roles") = "%Manager" // Comma-separated list of roles, e.g. "%Developer,%Operator"
+   set Properties("Password") = Password
+   set Properties("Username") =  Username
+   set ReturnStatus = ##class(MyApp.Security).Authenticate(Username,Password)
+ */ // end code for example 1
+ 
+ 
+   	 // code for example 2
+   	 // ***** Using LDAP data to interact directly with the LDAP *****
+   set Properties("Fullname") = $list($get(ReturnAttributes("cn")))
+   set Properties("Comment") = $list($get(ReturnAttributes("description")))
+   set Properties("Password") = Password
+   set Properties("Username") =  Username
+
+   // Now we need to extract some information from the custom fields to lookup the
+   // Necessary information in the Application Security model
+
+   // verify that this is a user allowed to access the application
+   throw:$get(ReturnAttributes("appUserID"))="" $$$CreateStatusException(1," Not an valid user for Application")
+   
+   // First the roles
+   set UserType = $list($get(ReturnAttributes("appUserType")))
+   set Roles = $listtostring($get(^UserTypeD(UserType)),",")
+   set Properties("Roles") = Roles
+
+   // Get the namespace based on the module selected
+   set ModulePosition = $listfind($get(ReturnAttributes("appModules")),AppModule)
+   throw:ModulePosition=0 $$$CreateStatusException(1," "_AppModule_"not an allowed for user")
+   
+   set FirstModule = $list($get(ReturnAttributes("appModules")),ModulePosition)
+   set Properties("NameSpace") = $get(^AppModules(FirstModule))
+   
+   // Finally setup the Application in memory security profile
+   kill ^||AppSecurity
+   
+   set ^||AppSecurity("UserID") = $get(ReturnAttributes("appUserID"))
+   set ^||AppSecurity("UserType") = $get(ReturnAttributes("appUserType"))
+   set ^||AppSecurity("Modules") = $get(ReturnAttributes("appModules"))
+   set ^||AppSecurity("Menus") = $get(ReturnAttributes("appMenus"))
+   // end code for example 2
+
+ } Catch Except {
+   set ReturnStatus = Except.AsStatus()
+ } 
+ 
+#;We must free the search buffer here otherwise future LDAP calls may core 
+#;or memory leak.
+ if $data(SearchResult) {
+    do ##Class(%SYS.LDAP).MsgFree(SearchResult)
+ }
+#;Close the connection and free the LDAP in memory structures.
+ if $data(LDAPsvr) {
+    do ##Class(%SYS.LDAP).UnBinds(LDAPsvr)
+ }
+ 
+ quit ReturnStatus
+}
+ /***************************************************
+   Change password entry point
+   not used in current implementation
+ */
+ChangePassword(Username,NewPassword,OldPassword,Status) Public {
+   quit 0
+ }
+ /***************************************************
+   GetCredentials entry point
+   not used in current implementation
+ */
+GetCredentials(ServiceName,Namespace,Username,Password,Credentials) Public {
+	// Code for Example 2
+ set ReturnStatus = $SYSTEM.Status.OK()
+ try {
+	 // prompt for LDAP username, LDAP password, and Application Module
+	 write !,"Network Username: "
+	 read LDuser
+	 
+	 write !,"Network Password: "
+	 // turn off keyboard echo for password entry
+	 Use 0:(:"CS")
+	 read Password
+	 Use 0:(:"")
+	 Write !,"Application Module: "
+	 read AppModule
+	 
+	 // there is no place to pass back the Application Module
+	 // therefore we will make the value of Username be a $list value with
+	 // the first list position being the username and the second the 
+	 // application module
+	 set Username = $Listbuild(LDuser,AppModule)
+ } catch Except {
+ 	set ReturnStatus = Except.AsStatus()
+ }
+ Quit ReturnStatus
+ // end code for example 2
+
+ quit $SYSTEM.Status.Error($$$GetCredentialsFailed)
+}
