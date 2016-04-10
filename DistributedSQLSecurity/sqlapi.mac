@@ -1,0 +1,75 @@
+ROUTINE sqlapi
+#include %occStatus
+#;API calls to Demonstrate Distributed SQL API using Enterprise Manager
+sqlapi	;
+	quit
+user	;add user Tamara
+	set iteration=+$get(^sqlapi)
+	set t=##class(%EM.DistSQLSecurity).Execute("Create User Tamara"_iteration_"  IDENTIFY BY Cache2016")
+	if '$$$ISERR(t) w !,"Success."
+	else  d $system.Status.DisplayError(t)
+	quit
+dropuser	;drop user Tamara
+	set iteration=+$get(^sqlapi)
+	set t=##class(%EM.DistSQLSecurity).Execute("Drop User Tamara"_iteration)
+	if '$$$ISERR(t) w !,"Success."
+	else  d $system.Status.DisplayError(t)
+	quit
+role	;add role for Tamara
+	set iteration=+$get(^sqlapi)
+	set t=##class(%EM.DistSQLSecurity).Execute("Create Role TamaraRole"_iteration)
+	if '$$$ISERR(t) w !,"Success."
+	else  d $system.Status.DisplayError(t)
+	quit
+droprole	;drop role for Tamara
+	set iteration=+$get(^sqlapi)
+	set t=##class(%EM.DistSQLSecurity).Execute("Drop Role TamaraRole"_iteration)
+	if '$$$ISERR(t) w !,"Success."
+	else  d $system.Status.DisplayError(t)
+	quit
+grant	;grant role to Tamara
+	set iteration=+$get(^sqlapi)
+	set t=##class(%EM.DistSQLSecurity).Execute("Grant TamaraRole"_iteration_" TO Tamara"_iteration)
+	;s t=##class(%EM.DistSQLSecurity).Execute("Grant TamaraRole TO Tamara"_iteration)
+	if '$$$ISERR(t) w !,"Success."
+	else  d $system.Status.DisplayError(t)
+	quit
+revoke	;revoke role for Tamara
+	set iteration=+$get(^sqlapi)
+	set t=##class(%EM.DistSQLSecurity).Execute("Revoke TamaraRole"_iteration_" FROM Tamara"_iteration)
+	;s t=##class(%EM.DistSQLSecurity).Execute("Revoke TamaraRole FROM Tamara"_iteration)
+	if '$$$ISERR(t) w !,"Success."
+	else  d $system.Status.DisplayError(t)
+	quit
+all	;perform all actions
+	set iteration=$increment(^sqlapi) w !,"iteration = ",iteration
+	do user
+	do role
+	do grant
+	Read "Hit enter for revoke/drop step",X
+	do revoke
+	do droprole
+	do dropuser
+	quit
+	;
+direct	;Will fail on managed instance; because its non-managed call
+	Set Result=$SYSTEM.SQL.Execute("CREATE USER Tamara IDENTIFY BY Cache2016")
+	quit
+reset	;Kill SQL update globals
+	kill ^|"%sys"|ISC.EMS.SQLupdate
+	kill ^|"%sys"|ISC.EMS.SQLupdated
+	quit
+show	;Show update and updated
+	ZW ^|"%sys"|ISC.EMS.SQLupdate
+	Write !!,"Press return to see updated. " r xx
+	ZW ^|"%sys"|ISC.EMS.SQLupdated
+	quit
+setlog(level,file) public {
+	if '$d(level) s level=9
+	if '$d(file) s file=$zu(12)_"manager.log"
+	set ^|"%SYS"|ISC.EMS("Log")=level
+	set ^|"%SYS"|ISC.EMS("LogFile")=file
+}
+resetlog() public {
+	set ^|"%SYS"|ISC.EMS("Log")=0
+}
