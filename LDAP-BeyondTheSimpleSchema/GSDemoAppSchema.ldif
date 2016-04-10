@@ -1,0 +1,29 @@
+# Example application security schema for OpenLDAP
+dn: cn=appSecurity,cn=schema,cn=config
+objectclass: olcSchemaConfig
+#
+# Attribute Types
+#
+olcAttributeTypes: ( 9999.1.1 NAME 'appUserID'
+ DESC 'Application User'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
+#
+olcAttributeTypes: ( 9999.1.2 NAME 'appUserType'
+ DESC 'Applicaion user type'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
+#
+olcAttributeTypes: ( 9999.1.3 NAME 'appModules'
+ DESC 'Application Modules allowed'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+#
+olcAttributeTypes: ( 9999.1.4 NAME 'appMenus'
+ DESC 'Application Menues allowed'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+#
+# Object Classes
+#
+olcObjectClasses: ( 9999.2.1 NAME 'appSecurity'
+ DESC 'Application attributes'
+ SUP top AUXILIARY
+ MAY ( appUserID $ appUserType $ appModules $ appMenus )
+ )

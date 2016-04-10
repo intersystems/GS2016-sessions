@@ -1,0 +1,47 @@
+dn: uid=rich,dc=intersystems,dc=com
+objectClass: organizationalPerson
+objectClass: uidObject
+objectClass: appSecurity
+cn: Rich Taylor
+sn: Taylor
+description: Application User 2
+st: NY
+uid: rich
+appUserID: rtaylor
+appUserType: User
+appModules: AP
+appModules: Checks
+appMenus: AP.Maint
+appMenus: AP.Vouchers
+appMenus: Checks.Print
+appMenus: Checks.Recon
+
+dn: uid=jack,dc=intersystems,dc=com
+objectClass: organizationalPerson
+objectClass: uidObject
+objectClass: appSecurity
+cn: Jack Oneill
+sn: Oneill
+description: Application Manager
+st: CO
+uid: jack
+appUserID: joneill
+appUserType: Manager
+appModules: AP
+appModules: Checks
+appModules: Orders
+appMenus: *
+
+dn: uid=daniel,dc=intersystems,dc=com
+objectClass: organizationalPerson
+objectClass: uidObject
+objectClass: appSecurity
+cn: Daniel
+sn: Jackson
+description: Application User 2
+st: MA
+uid: daniel
+appUserID: djackson
+appUserType: Intern
+appModules: AP
+appMenus: AP.Maint
