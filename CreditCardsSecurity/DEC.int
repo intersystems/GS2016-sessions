@@ -1,0 +1,75 @@
+ROUTINE DEC [Type=INT]
+
+LOAD //Load Encryption Keys into Memory
+	New  New $Namespace
+	USE 0:(80:"S") //turn echo off
+	Read !,"Password to unlock key storage: ",passwd
+	USE 0:(80:"-S") //turn echo back on
+	Quit:passwd=""
+	
+	Set $NAMESPACE="%SYS"
+	Do $System.Encryption.ActivateEncryptionKey("/home/keys/enckeys","SecAdmin",passwd)
+	
+	Set X=$System.Encryption.ListEncryptionKeys()
+	For I=1:1:$L(X,",") Write !,I," = ",$Piece(X,",",I)
+	Quit
+	
+SetKey(n) //set key in slot N to be used as encryption key
+	New (n)
+	Set X=$System.Encryption.ListEncryptionKeys()
+	Set ^%DECKEY=$Piece(X,",",n)
+	QUIT
+	
+Encrypt(text) 
+		Quit $System.Encryption.AESCBCManagedKeyEncrypt(text, ^%DECKEY)
+		
+Decrypt(cipher) 
+		Quit $System.Encryption.AESCBCManagedKeyDecrypt(cipher)
+		
+Reencrypt(cipher)
+	Quit $$Encrypt($$Decrypt(cipher))
+	
+ChangeKey(n)
+	New (n)
+	Do SetKey(n)
+	Set KeyID=^%DECKEY
+	Job ReEncryptJob^DEC
+	Write !,"Background re-encrypt running. Performing 10,000 random reads",!,"(decrypting and check for old key)",!
+	do {
+		Set found=0
+		For I=1:1:10000 {
+			Set RI=$RANDOM(10000000)+1
+			Set X=^TDB(RI)
+			Set ClearText=$$Decrypt(X)
+			Set:X'[KeyID found=found+1
+			}
+		Write $Char(13),"After 10000 random reads the old key was found in records: ",found
+			
+	} while found
+	QUIT
+
+ReEncryptJob
+	Set NumberOfRecords=10000000
+	Set ^JOBDone=0
+	For I=1:1:NumberOfRecords Set ^TDB(I)=$$Reencrypt(^TDB(I))
+	Set ^JOBDone=1
+	QUIT
+	
+CreateTestDB //Create Test Database
+	New
+	Set NumberOfRecords=10000000
+	Do SetKey(1) //set the key to number 1
+	Kill ^TDB
+	For I=1:1:NumberOfRecords Set ^TDB(I)=$$Encrypt($$TestString())  W:'(I#1000000) !,I," records created"
+	QUIT
+	
+TestString() 
+	New 
+	Set R=""
+	For I=1:1:$Random(10)+5 Set R=R_$Char($Random(25)+65)
+	QUIT R
+	
+	
+
+
+	
