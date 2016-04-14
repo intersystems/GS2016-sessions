@@ -7,3 +7,5 @@
 Data models are the foundation of effective analytics. This session focuses on the factors that make good analytics data models. 
 
 Content related to this session, including slides, video and additional learning content can be found [here](https://beta.learning.intersystems.com/course/view.php?id=37).
+
+**Analytics Model: Out of the Box** session on [InterSystems Community](https://community.intersystems.com/post/global-summit-2016-analytics-models-thinking-outside-box)
