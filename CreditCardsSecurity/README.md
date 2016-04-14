@@ -14,3 +14,4 @@ Solution: Data-at-rest encryption and data element encryption
  
 
 Content related to this session, including slides, video and additional learning content can be found [here](https://beta.learning.intersystems.com/course/view.php?id=56).
+
