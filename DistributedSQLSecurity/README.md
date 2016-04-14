@@ -12,3 +12,5 @@ Problem: SQL Security is local to the instance and most of time driven by custom
 Solution: With application code use new API calls to issue SQL security statements that is applied to multiple instances.
 
 Content related to this session, including slides, video and additional learning content can be found [here](https://beta.learning.intersystems.com/course/view.php?id=48).
+
+**Distributed SQL Security** session on [InterSystems Community](https://community.intersystems.com/post/global-summit-2016-distributed-sql-security)
