@@ -1,3 +1,5 @@
+**LDAP: Beyond the Simple Schema** session on [InterSystems Community](https://community.intersystems.com/post/global-summit-2016-ldap-beyond-simple-schema)
+
 # LDAP-Beyond the Simple Schema 
 
 The code provide in this example will demostrate how to interact with LDAP
