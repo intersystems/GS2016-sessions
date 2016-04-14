@@ -1,3 +1,5 @@
+**Turning Accountants into Explorers** session on [InterSystems Community](https://community.intersystems.com/post/global-summit-2016-turning-accountants-explorers)
+
 # trader
 Example on how to add unstructured data into an existing application, by using iKnow Rule Builder results
 
