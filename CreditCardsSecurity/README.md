@@ -15,3 +15,4 @@ Solution: Data-at-rest encryption and data element encryption
 
 Content related to this session, including slides, video and additional learning content can be found [here](https://beta.learning.intersystems.com/course/view.php?id=56).
 
+**Handling Credit Cards the Right Way** session on [InterSystems Community](https://community.intersystems.com/post/global-summit-2016-handling-credit-cards-right-way)
