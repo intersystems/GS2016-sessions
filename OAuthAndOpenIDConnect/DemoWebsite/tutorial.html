@@ -1,0 +1,289 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Oauth &amp; OpenID Connect Demo</title>
+  <meta name="description" content="website description" />
+  <meta name="keywords" content="website keywords, website keywords" />
+  <meta http-equiv="content-type" content="text/html; charset=windows-1252" />
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Tangerine&amp;v1" />
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz" />
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+
+<body>
+  <div id="main">
+    <div id="header">
+      <div id="logo">
+        <h1>Integrating Oauth 2.0 and OpenID Connect</h1>
+        <div class="slogan">Let's see what we got here!</div>
+      </div>
+      <div id="menubar">
+        <ul id="menu">
+          <!-- put class="current" in the li tag for the selected page - to highlight which page you're on -->
+          <li><a href="http://localhost/demo/">Home</a></li>
+          <li><a href="https://localhost/csp/google/Web.OAUTH2.Google1N.cls">Demo 1</a></li>
+          <li><a href="https://dk-gs2016/csp/oauth2/Web.OAUTH2.Cache1N.cls">Demo 2</a></li>
+          <li class="current"><a href="http://localhost/demo/tutorial.html">Tutorial</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="site_content">
+	  <div id="sidebar_container">
+        <img class="paperclip" src="style/paperclip.png" alt="paperclip" />
+        <div class="sidebar">
+        <!-- insert your sidebar items here -->
+        <h3>About this demo</h3>
+        <h4>Global Summit</h4>
+        <h5>April 2016</h5>
+        <p>Please post you comments and ask your questions to the <br /><a href="https://community.intersystems.com/">InterSystems Developer Community!</a></p>
+        </div>
+		<img class="paperclip" src="style/paperclip.png" alt="paperclip" />
+        <div class="sidebar">
+        <!-- insert your sidebar items here -->
+        <h3>Where to go from here...</h3>
+		<ul>
+		<li>For detailed technical discussions contact <b>Marvin Tener</b> in the <b>Developer Zone</b></li>
+		<li>You may also be interested in these <a href="http://localhost/demo/whatnext.html">sessions</a></li>
+		<li>Please fill-in feedback form</li>
+		<li>Don't forget to participate at the unconference next the door!</li>
+		<li>Contact your Sales Enginner for additional post-conference engagements</li>
+		</ul>
+        </div>
+      </div>
+	  
+      <div id="content" style="height:700px; overflow-y: scroll;">
+        <!-- insert the page content here -->
+		<a href="#INTRO">Introduction</a> | 
+		<a href="#DM1">Demo 1</a> |
+		<a href="#DM2">Demo 2</a> 
+
+		
+        <h1 id="INTRO">Introduction</h1>
+		<h2>What is OAUTH2?</h2>		
+		<p>More and more we all face situations where we have a mobile device with us, that runs many more or less usefull applications. These applications often provide similar functionality, but scope of the functionality somewhat differs. For instance,
+		your iPhone contains nice document reader, your Android tablet has its own reader and your notebook has yet another one. All these applications share ability to read and display documents.  But these documents do not necessarily live 
+		locally on all your devices. You use a service, like Google Drive to store your files for sharing. And here we go. In order to access your documents from Google Drive, all you applications
+		 need to identify themselves so Google grants them access (in other words, autorizes them) to your files. And that's why OAuth protocol emerged. Its puprose it to standardize authorization process in the connected environment, namely in Http 
+		 world. Currently,<b>OAuth2.0</b> is the latest version. This framework is extendable, one of possible extensions is allowing applications to retrieve user information - authenticate users. This initiative is called <b>OpenID Connect</b>.
+		 <p>Following diagram shows one of several possible message flows between involved entities - the resource owner (server), the authorization server and the client (application).
+		 <img src='tutorial-files/INTRO_OAUTH2_1.PNG' alt='OAuth2 messages flow' width='850px' align='left'>
+		 <br clear='left'/>
+		
+			
+        <h1 id="DM1">Demo 1</h1>
+		<a href="#INTRO">Top</a>
+		<h2>Using OAUTH2 with Cache&acute;</h2>
+		<p>In this demonstration we will learn how to call from Cache&acute to third party server that uses OAuth2 to authorize other applications users for calling its funtionality.
+		<p>This demonstration illustrates following possible use case. Suppose you have a Cache&acute based (web) application, that runs a DMS system. As part of application funtionality,
+		you want provide application users access to their Google Drive so they can download documents from your central repository into their Google Drive. Why? Because with Google Drive they can
+		work with their files at any mobile device, not only at their desktop used for their office work.
+		<p>
+		<h3>Prerequisites</h3>
+		<h4>Web server configuration</h4>
+		
+		<p>As it is required to use SSL, you have to configure your Web server to work with traffic encryption. We are not going into the details of how to configure various web servers (IIS, Apache, ...)
+		for SSL. Please refer to particular web server documentation.
+		
+		<h4>Cache&acute SSL configuration</h4>
+		<p>For establishing SSL channel to Google, we need to create SSL/TLS configuration. Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.SSL.zen?PID=GOOGLE">System > Security Management > SSL/TLS Configurations</a> menu to do that. For the purpose of demo, name 
+		the configuration GOOGLE and check <b>Type = client</b> and <b>Server Certificate Verification = none</b>. Leave the rest of form with default values.
+		
+		<h4>Cache&acute OAUTH2 configuration</h4>
+		<h5>OAUTH2 Server Configuration</h5>
+		<p>First, we need to configure OAUTH2 authorization server - various endpoints per OAuth2 specification. Following images demonstrate sample server configuration.	
+		<img src='tutorial-files/D1_OAUTH2_SERVER_CONF.PNG' alt='Server Endpoints Configuration' width='450px' align='left'>
+		Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.OAuth2.Client.ServerList.zen">System > Security Management > OAuth 2.0 Client Configurations</a> 
+		to create or edit your configuration.
+		<br clear='left'/>
+		
+		<h5>Client Configuration</h5>
+		<p>Once we have server configuration created, we need to provide this server's client configuration(s). The image shows sample configuration.
+	
+		<img src='tutorial-files/D1_OAUTH2_CLIENT_CONF.PNG' alt='Server\'s Client Configuration' width='450px' align='left'>
+		Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.OAuth2.Client.ConfigurationList.zen?IssuerEndpointID=1&IssuerEndpoint=https%3A%2F%2Faccounts.google.com%2Fo%2Foauth2%2Fauth">
+		System > Security Management > OAuth 2.0 Client Configuration > Client Configuration</a> 
+		to create or edit your configuration.
+		<br clear='left'/>
+		
+		<h3>Code explained</h3>
+		<p>The code itself is quite simple. What you need in order to call OAuth2 server is just a CSP/ZEN page with some server side script that checks whether your page has already been authorized and clear eventual access token.
+		Then, you need to a URL to OAuth2 server and button or some other form of link to that url.
+		
+		<h4>Initiation page</h4>
+		<p>In our demo, the initiation page is just a standard CSP class. As mentioned above, we provide a server side code to ensure we have fresh access token and url to OAuth2 server.
+		<img src='tutorial-files/D1_PAGE_1.PNG' alt='Initiation page' width='650px' align='left'>
+		The code calls two API classes provided by Cache&acute OAuth2 framework.
+		<ul>
+		<li>First, we call method IsAuthorized() of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.AccessToken">%SYS.OAuth2.AccessToken</a> class. This method checks whether any potentially existing access token is authorized.</li>
+		<li>Second, we retrieve url by calling GetAuthorizationCodeEndpoint() method of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.Authorization">%SYS.OAuth2.Authorization</a> class. There are more methods available with this class, corresponding to various Oauth2 authorization options.</li>
+		</ul>
+		The two methods use values of our client_ID and redirect_URI; these are defined as class parameters, but can be defined at runtime as ordinary variables, too.
+		Finally, we provide a link to Google API.
+		<br clear='left'/><p>
+		
+		
+		<h4>Result page</h4>
+		<p>Once we click a Google API link/button we are navigated to the Google Consent Page. This page is launched by Google and, per specification in the url, we <i>may</i> or <i>must</i> consent.
+		Having accepted consent, Google redirects the consent page to the redirect_URI we provided with the url. Redirected page can now call Google API functions as it has been authorized and posesses valid access token.
+		<p>We need to call GetAccessTokenAuthorizationCode() method of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.Authorization">%SYS.OAuth2.Authorization</a> class as Google is not using default Basic authorization. We do that in page's OnPreHTTP callback method.
+		<img src='tutorial-files/D1_PAGE_2_1.PNG' alt='Initiation page' width='650px' align='left'>
+		
+		<br clear='left'/>
+		<p>Now we can run a server side script, invoking either our implementation of some Google APIs (in fact, there is only one - userinfo) or invoking standard Http requests with access token supplied.
+		<img src='tutorial-files/D1_PAGE_2_2.PNG' alt='Initiation page' width='850px' align='left'>
+		<br clear='left'/>
+		<p>We add access token to the <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25Net.HttpRequest">%Net.HttpRequest</a> using AddAccessToken() 
+		method of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.AccessToken">%SYS.OAuth2.AccessToken</a> class. Having added access token, 
+		we can call either Get() method of standard <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25Net.HttpRequest">%Net.HttpRequest</a> or
+		 we can call GetUserInfo() method of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.AccessToken">%SYS.OAuth2.AccessToken</a> class to retrieve user information as stored by Google.
+		
+		<p>For more information about Google Apps and their scopes and urls please refer to <a href="https://developers.google.com/google-apps/">here</a> or <a href="https://developers.google.com/identity/protocols/googlescopes">here</a>.
+		
+		
+        <h1 id="DM2">Demo 2</h1><a href="#DM1">Top</a>
+		<h2>Cache&acute; as OpenID / OAuth2 provider</h2>
+		<p>This demonstration shows much more complex use case than the first demo. In this scenario, Cache server acts as a OAUTH2 authentication server, providing user identity and scopes to any other application.
+		You would find this scenariou usefull in situations where you run an application on protected Cache&acute server(s) within company perimeter. But you want to allow either your employees or people from outer world (e.g. doctors)
+		to retrieve information form you protected server (clinical information system). 
+		There are again, two possible cases. You want to give a one-time access to external person, or you want make sure your employees are never using their password used inside your company perimeter, 
+		from his/her mobile device in order to access data from protected server. (You don't want for some reason to establish a VPN)
+		<p>In this demo, Cache&acute would also provide user identity, according to the <b>OpenID Connect</b> specification. If you wonder what is the difference between OAuth2 and OpenID then very briefly:
+		<ul>
+		<li>OAuth 2.0 deals with user AUTHORIZATION, and leaves AUTHENTICATION untouched</li>
+		<li>OpenID 2.0 deals with user AUTHENTICATION</li>
+		<li>OpenID Connect deals with AUTHENTICATION but also integrates with OAuth 2.0 for AUTHORIZATION. (Some people say that OpenID Connect is in fact OAUTH2 on steriods.)</li>
+		</ul>
+		
+		<h3>Prerequisites</h3>
+		
+		<h4>Web server configuration</h4>
+		
+		<p>As it is required to use SSL, you have to configure your Web server to work with traffic encryption. We are not going into the details of how to configure various web servers (IIS, Apache, ...)
+		for SSL. Please refer to particular web server documentation.
+
+		<h4>Cache&acute Public Key Infrastructure</h4>
+		<p>In most complex case, there would be many Cache&acute resource servers using services of one or multiple Cache&acute OAuth2 server(s). And there can be undetermined number of applications (e.g. Cache&acute servers)
+		consuming services of resource servers.
+		<p>These servers have to communicate via SSL/TLS so there must be a PKI configured so each application and resource server can sign and verify identity requests and tokens.
+		<p>On the other hand, in our demo, we will have just one server, playing all three roles: application, authorization &amp; authentication and resource server. 
+		<p>We are not going into PKI setup details hre, but you can check online <a href="http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GCAS_pki">documentation</a>.
+		
+		<h4>Cache&acute SSL configuration</h4>
+		<p>For establishing SSL channel, we need to create SSL/TLS configuration. Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.SSL.zen?PID=sslunittest">System > Security Management > SSL/TLS Configurations</a> menu to do that.
+		For the purpose of demo, name the configuration 'sslunittest' and check <b>Type = client</b> and <b>Server Certificate Verification = none</b>. Leave the rest of form with default values.
+		
+		<h4>Cache&acute OAUTH2 configuration</h4>
+		<h5>OAUTH2 Authorization Server Configuration</h5>
+		<p>First, we need to configure an instance of Cache&acute OAUTH2 authorization server.	
+		<img src='tutorial-files/D2_OAUTH2_AUTH_SERVER_1.PNG' alt='Server Endpoints Configuration' width='550px' align='left'>
+		<img src='tutorial-files/D2_OAUTH2_AUTH_SERVER_2.PNG' alt='Server Endpoints Configuration' width='550px' align='left'>
+		<img src='tutorial-files/D2_OAUTH2_AUTH_SERVER_3.PNG' alt='Server Endpoints Configuration' width='550px' align='left'>
+		Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.OAuth2.Server.Configuration.zen">System > Security Management > OAuth 2.0 Authorization Server Configuration</a> 
+		to create or edit your configuration.
+		We, among others, supply server's host name, port and prefix (optional) to form issuer endpoint. Furtehr we specify supported grant types, scopes, SSL configuration
+		 and setting for Java Web Token handling (used by OpenID Connect)
+		<br clear='left'/>
+		
+		<h5>OAUTH2 Authorization Server Client Configurations</h5>
+		<p>In order to establish trust between resource server and appplication (client) we must register them with authorization server as clients.
+		
+		<h6>Client Configuration</h6>
+		<p>Let's start with client application.
+		<img src='tutorial-files/D2_OAUTH2_AUTH_CLIENT_CLIENT.PNG' alt='Server\'s Client Configuration' width='650px' align='left'>
+		Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.OAuth2.Server.ClientList.zen?">
+		System > Security Management > OAuth 2.0 Authorization Server > Server Client Configurations</a> 
+		to create or edit your configurations.
+		The application is a <b>confidential</b> client and supports authorization code as well as some other grant types.
+		Cache&acute assigns Client ID and Client Secret values for this particula configuration. These values are unique foe each client.
+		We also must provide redirect URL(s) and optionally can modify the consent screen look and feel.
+		Lastly, we supply name of client application X.509 Credentials for working with JWT.
+		<br clear='left'/>
+	
+		<h6>Resource configuration</h6>
+		<p>Similar to client application, we need to configure our resource server.
+		<img src='tutorial-files/D2_OAUTH2_AUTH_CLIENT_RESOURCE.PNG' alt='Server\'s Client Configuration' width='650px' align='left'>
+		Use <a href="http://localhost:57772/csp/sys/sec/%25CSP.UI.Portal.OAuth2.Server.ClientList.zen?">
+		System > Security Management > OAuth 2.0 Authorization Server > Server Client Configurations</a> 
+		to create or edit your configurations.
+		The resource is a <b>resource server type</b> client and defines no grant types, nor redirect URL(s).
+		Cache&acute assigns Client ID and Client Secret values for this particula configuration. These values are unique foe each client.
+		We only supply name of client application X.509 Credentials for working with JWT.
+		<br clear='left'/>
+
+		<h4>Web Applications</h4>
+		<p>In this demo, we will run client application code in /csp/oauth2 application, the OAUTH2 server in /oauth2 (it's a REST application) and  finally, the resource
+		application will run in /csp/portfolio.
+		
+		<h5>/csp/oauth2 application</h5>
+		<p>There is nothing special in the application deifnition. We use Password authentication method.
+		
+		<h5>/oauth2 application</h5>
+		<p>This is a REST application, used by Authentication server. Alowed authentication method is Unauthenticated.
+		Dispatch class is OAuth2.Server.REST. Application assings %All role.
+
+		<h5>/csp/portfolio application</h5>
+		<p>This is a standard application, used by Resource server. Alowed authentication methods are Password (for internal users) and Delegated 
+		(for users authenticated and authorized by Authorization server).
+
+		<h4>Delegated authentication</h4>
+		<p>This is not necessary step, but setting up Delegated authentication may give resource server more control ove the security 
+		context of process serving response to the application server. Please read <a href="http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GCAS_delegated">documentation</a> for more details about delegated authentication.
+		
+		<h3>Code explained</h3>		
+		<p>The code in this demo is very similar to first demo. There is only one difference: we must perform Java Web Token validation. 
+
+		
+		<h4>Initiation page</h4>
+		<p>In our demo, the initiation page is just a standard CSP class. As mentioned above, we provide a server side code to ensure we have fresh access token and url to OAuth2 server.
+		<img src='tutorial-files/D2_PAGE_1.PNG' alt='Initiation page' width='850px' align='left'>
+		<br clear='left'/><p>
+		The code calls two API classes provided by Cache&acute OAuth2 framework.
+		<ul>
+		<li>First, we call method IsAuthorized() of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.AccessToken">%SYS.OAuth2.AccessToken</a> class. This method checks whether any potentially existing access token is authorized.</li>
+		<li>Second, we retrieve url by calling GetAuthorizationCodeEndpoint() method of <a href="http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=google&CLASSNAME=%25SYS.OAuth2.Authorization">%SYS.OAuth2.Authorization</a> class. There are more methods available with this class, corresponding to various Oauth2 authorization options.</li>
+		</ul>
+		The two methods use values of our client_ID and redirect_URI; these are defined as class parameters, but can be defined at runtime as ordinary variables, too.
+		Finally, we provide a link to Cache&acute Authorization Server API.
+		<p><i>Please note, we have to call <b>openid profile</b> scope in order to use OpenID Connect authentication.</i>
+		<p>
+		
+		<h4>Result page</h4>
+		<p>Once we click a Sign-in link/button we are navigated to the Cache&acute OAUTH2 Consent Page. This page is launched by Cache&acute authorization server instance and, 
+		per specification in the url, we <i>may</i> or <i>must</i> consent.
+		Having accepted consent, Authorization server redirects the consent page to the redirect_URI we provided with the url. Redirected page can now call 
+		functions on Cache&acute resource server as it has been authorized and posesses valid access token.
+		<p>Optionally, if Delegated authentication is activated, the process on resource server is bound to newly created (or modified) delegated user corresponding to the username
+		coming with the request from authorization server. Remember, resource server TRUSTS authorization server and simply accepts incoming username and assigns it role(s) 
+		as specified in the scope list.
+		
+		<p>We run a server side script, that performs following actions
+		<p>1. Checks whether access token we received is still valid and that we are successfully authorized and validates Java Web Token as we asked for it via openid profile scope
+		<img src='tutorial-files/D2_PAGE_2_1.PNG' alt='Initiation page' width='900px' align='left'>
+		<br clear='left'/>
+		<p>2. Introspects access Token and validates ID token
+		<img src='tutorial-files/D2_PAGE_2_2.PNG' alt='Initiation page' width='900px' align='left'>
+		<br clear='left'/>
+		<p>3. Retrieves user information from Authorization server
+		<img src='tutorial-files/D2_PAGE_2_3.PNG' alt='Initiation page' width='900px' align='left'>
+		<br clear='left'/>	
+		<p>4. Calls resource server application logic to dispatch data to the client application
+		<img src='tutorial-files/D2_PAGE_2_4.PNG' alt='Initiation page' width='900px' align='left'>
+		<br clear='left'/>	
+		
+		
+		<h1>Conclusion</h1>
+		<p>We have learned on two use case demonstrations how to benefit from new OAuth 2.0 framework implementation. We have seen both simple case, where Cache
+		as a client application receives autorization from third party provider to access resources outside Cache&acute, as well as case where other application
+		was given access to resource server by a Cache&acute based OAuth 2.0 authorization server.
+		<p>Back to <a href="#INTRO">Top</a>
+		
+		
+      </div>
+    </div>
+    <div id="footer">
+      <p>Copyright &copy; HTML5 Templates | <a href="http://validator.w3.org/check?uri=referer">HTML5</a> | <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> | <a href="http://www.html5webtemplates.co.uk">Website templates</a></p>
+    </div>
+  </div>
+</body>
+</html>

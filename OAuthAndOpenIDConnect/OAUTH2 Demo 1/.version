@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<com.intersys.eclipse.sync.library:AtelierProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.intersys.eclipse.sync.library="http:///com/intersys/eclipse/sync/library/model/sync.ecore" name="OAUTH2 Demo 1">
+  <resourceList name="Web.OAUTH2.Google1N.cls" localFilePath="file:/C:/Users/dkutac/InterSystems/Atelier/workspace/OAUTH2%20Demo%201/Web.OAUTH2.Google1N.cls">
+    <version serverTimestamp="2016-03-23 15:29:25.261" lastUpdateTimestamp="1458743365277" serverDocName="Web.OAUTH2.Google1N.cls"/>
+  </resourceList>
+  <resourceList name="Web.OAUTH2.Google2N.cls" localFilePath="file:/C:/Users/dkutac/InterSystems/Atelier/workspace/OAUTH2%20Demo%201/Web.OAUTH2.Google2N.cls">
+    <version serverTimestamp="2016-03-23 15:29:56.182" lastUpdateTimestamp="1458743396199" serverDocName="Web.OAUTH2.Google2N.cls"/>
+  </resourceList>
+</com.intersys.eclipse.sync.library:AtelierProject>
