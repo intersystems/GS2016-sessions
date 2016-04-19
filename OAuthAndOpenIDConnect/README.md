@@ -15,4 +15,8 @@ Solution: Create awareness and interest in using OAuth 2.0
 
 Content related to this session, including slides, video and additional learning content can be found [here](https://beta.learning.intersystems.com/course/view.php?id=75).
 
+Once you download the DemoWebSite folder, either run index.html and navigate to Tutorial page or open tutorial.html directly for detailed description of the demo code and samples, as well as setting up environment.
+Please note: this code needs Cache 2016.3 which is not yet available but soon would be published via the FieldTest program.
+
+
 **Integrating OAuth 2.0 and OpenID Connect** session on [InterSystems Community](https://community.intersystems.com/post/global-summit-2016-integrating-oauth-20-and-openid-connect)
